@@ -5,6 +5,7 @@ interface ApplicationType {
     id: number;
     company: string;
     role: string;
+    location: string;
     date: string;
     status: "waiting" | "rejected" | "accepted";
 }
@@ -13,8 +14,11 @@ export default function App() {
     const [applications, setApplications] = useState<ApplicationType[]>([]);
     const [company, setCompany] = useState("");
     const [role, setRole] = useState("");
+    const [location, setLocation] = useState("");
     const [dateApplied, setDateApplied] = useState("");
     const [status, setStatus] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         fetchJobApplications();
@@ -41,6 +45,7 @@ export default function App() {
                 id: nextId,
                 company: company,
                 role: role,
+                location: location,
                 date: dateApplied,
                 status: status,
             };
@@ -52,6 +57,7 @@ export default function App() {
         } finally {
             setCompany("");
             setRole("");
+            setLocation("");
             setDateApplied("");
             setStatus("");
         }
@@ -74,7 +80,7 @@ export default function App() {
                         id="company"
                         name="company"
                         placeholder="Company"
-                        className="border-[1px] border-background bg-secondary p-1 w-full"
+                        className="border-[1px] border-background bg-secondary-background p-1 w-full"
                         value={company.trimStart()}
                         onChange={(e) => setCompany(e.target.value)}
                         required
@@ -87,9 +93,22 @@ export default function App() {
                         id="role"
                         name="role"
                         placeholder="Role"
-                        className="border-[1px] border-background bg-secondary p-1 w-full"
+                        className="border-[1px] border-background bg-secondary-background p-1 w-full"
                         value={role.trimStart()}
                         onChange={(e) => setRole(e.target.value)}
+                        required
+                    />
+                    <label htmlFor="location" className="sr-only">
+                        Location
+                    </label>
+                    <input
+                        type="text"
+                        id="location"
+                        name="location"
+                        placeholder="Location"
+                        className="border-[1px] border-background bg-secondary-background p-1 w-full"
+                        value={location.trimStart()}
+                        onChange={(e) => setLocation(e.target.value)}
                         required
                     />
                     <label htmlFor="date" className="sr-only">
@@ -99,7 +118,7 @@ export default function App() {
                         type="date"
                         id="date"
                         name="date"
-                        className="border-[1px] border-background bg-secondary p-1 w-full"
+                        className="border-[1px] border-background bg-secondary-background p-1 w-full"
                         value={dateApplied}
                         onChange={(e) => setDateApplied(e.target.value)}
                         required
@@ -110,7 +129,7 @@ export default function App() {
                     <select
                         name="status"
                         id="status"
-                        className="border-[1px] border-background bg-secondary p-1 w-full"
+                        className="border-[1px] border-background bg-secondary-background p-1 w-full"
                         defaultValue={""}
                         value={status}
                         onChange={(e) => setStatus(e.target.value)}
@@ -128,33 +147,124 @@ export default function App() {
                         Add Job
                     </button>
                 </form>
-                <section className="w-full">
-                    <table className="w-full border-2 border-secondary">
-                        <thead className="bg-secondary border-b-2 border-secondary">
-                            <tr className="text-lg">
-                                <th>Company</th>
-                                <th>Role</th>
-                                <th>Date Applied</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {applications.length > 0 ? (
-                                applications.map((application) => (
-                                    <tr key={application.id}>
-                                        <td>{application.company}</td>
-                                        <td>{application.role}</td>
-                                        <td>{application.date}</td>
-                                        <td>{application.status}</td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr className="w-full text-center italic">
-                                    <td colSpan={4}>Start Applying...</td>
+                <section className="w-full flex flex-col gap-4">
+                    <label htmlFor="status-filter" className="sr-only">
+                        Status Filter
+                    </label>
+                    <select
+                        name="status-filter"
+                        id="status-filter"
+                        className="self-end border-[1px] border-background bg-secondary-background p-1"
+                        defaultValue={""}
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                    >
+                        <option value="">No Filter</option>
+                        <option value="waiting">Waiting</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                    <div className="overflow-x-auto">
+                        <table className="w-full border-2 border-secondary-background">
+                            <thead className="bg-secondary-background border-b-2 border-secondary-background">
+                                <tr className="text-lg">
+                                    <th>Company</th>
+                                    <th>Role</th>
+                                    <th>Location</th>
+                                    <th>Date Applied</th>
+                                    <th>Status</th>
+                                    <th>Update</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {applications.length > 0 ? (
+                                    applications
+                                        .filter(
+                                            (app) =>
+                                                statusFilter === "" ||
+                                                app.status === statusFilter
+                                        )
+                                        .map((application) => (
+                                            <tr
+                                                key={application.id}
+                                                className="border-b-[1px] border-secondary-background"
+                                            >
+                                                <td>{application.company}</td>
+                                                <td>{application.role}</td>
+                                                <td>
+                                                    {application.location ||
+                                                        "N/A"}
+                                                </td>
+                                                <td>
+                                                    {application.date &&
+                                                        new Date(
+                                                            application.date
+                                                        )
+                                                            .toDateString()
+                                                            .slice(4)}
+                                                </td>
+                                                <td
+                                                    className={
+                                                        application.status ===
+                                                        "rejected"
+                                                            ? `text-rejected`
+                                                            : application.status ===
+                                                              "accepted"
+                                                            ? "text-accepted"
+                                                            : "text-yellow-400"
+                                                    }
+                                                >
+                                                    {!isEditing
+                                                        ? application.status
+                                                              .charAt(0)
+                                                              .toUpperCase() +
+                                                          application.status.slice(
+                                                              1
+                                                          )
+                                                        : "Editing"}
+                                                </td>
+                                                <td>
+                                                    <button
+                                                        className="bg-primary border-primary border-[1px] p-1 cursor-pointer hover:bg-transparent transition-all"
+                                                        onClick={() => {
+                                                            setIsEditing(
+                                                                !isEditing
+                                                            );
+                                                            console.log(
+                                                                isEditing,
+                                                                application.id
+                                                            );
+                                                        }}
+                                                    >
+                                                        Update
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                ) : (
+                                    <tr className="w-full text-center italic">
+                                        <td colSpan={4}>Start Applying...</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="text-center">
+                        <span className="">
+                            {statusFilter.charAt(0).toUpperCase() +
+                                statusFilter.slice(1)}{" "}
+                            Job Applications:{" "}
+                        </span>
+                        <span className="text-primary font-bold">
+                            {
+                                applications.filter(
+                                    (app) =>
+                                        !statusFilter ||
+                                        app.status === statusFilter
+                                ).length
+                            }
+                        </span>
+                    </div>
                 </section>
             </main>
         </div>
