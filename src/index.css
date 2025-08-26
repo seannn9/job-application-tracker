@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme inline {
+    --color-background: #222831;
+    --color-foreground: #eeeeee;
+    --color-primary: #00adb5;
+    --color-secondary: #393e46;
+}
+
+@layer base {
+    body {
+        @apply bg-background text-foreground;
+        font-family: monospace, Courier;
+    }
+    th,
+    td {
+        padding: 8px 10px;
+        text-align: center;
+    }
+}
