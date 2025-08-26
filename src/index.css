@@ -4,7 +4,11 @@
     --color-background: #222831;
     --color-foreground: #eeeeee;
     --color-primary: #00adb5;
-    --color-secondary: #393e46;
+    --color-accent: #6a1b9a;
+    --color-secondary-background: #393e46;
+    --color-waiting: oklch(85.2% 0.199 91.936);
+    --color-accepted: oklch(79.2% 0.209 151.711);
+    --color-rejected: oklch(70.4% 0.191 22.216);
 }
 
 @layer base {
