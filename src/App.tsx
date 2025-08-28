@@ -63,6 +63,34 @@ export default function App() {
         }
     };
 
+    const updateJobStatus = (
+        id: number,
+        company: string,
+        role: string,
+        location: string,
+        date: string,
+        status: ApplicationType["status"]
+    ) => {
+        try {
+            const existingJobs = localStorage.getItem("jobs");
+            const jobsArray = existingJobs ? JSON.parse(existingJobs) : [];
+            const updatedJob = {
+                id: id,
+                company: company,
+                role: role,
+                location: location,
+                date: date,
+                status: status,
+            };
+            const updatedJobsArray = jobsArray.map((job: { id: number }) =>
+                job.id === id ? updatedJob : job
+            );
+            localStorage.setItem("jobs", JSON.stringify(updatedJobsArray));
+        } finally {
+            fetchJobApplications();
+        }
+    };
+
     return (
         <div className="h-screen flex flex-col">
             <Navbar />
@@ -169,6 +197,23 @@ export default function App() {
                     <Table
                         applications={applications}
                         statusFilter={statusFilter}
+                        updateJobStatus={(
+                            id,
+                            company,
+                            role,
+                            location,
+                            date,
+                            status
+                        ) => {
+                            updateJobStatus(
+                                id,
+                                company,
+                                role,
+                                location,
+                                date,
+                                status
+                            );
+                        }}
                     />
                     <div className="text-center">
                         <span className="">
